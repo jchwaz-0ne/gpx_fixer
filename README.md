@@ -4,7 +4,7 @@
 
 GPX Fixer объединяет соседние точки трека в одну усреднённую точку, уменьшая количество точек в файле и сохраняя общую форму маршрута.
 
-[jchwaz-0ne.github.io/gpx_fixer(https://jchwaz-0ne.github.io/gpx_fixer/)
+[jchwaz-0ne.github.io/gpx_fixer](https://jchwaz-0ne.github.io/gpx_fixer/)
 
 ---
 
