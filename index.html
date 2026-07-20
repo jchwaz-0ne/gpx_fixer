@@ -173,6 +173,19 @@
             margin: 0;
         }
 
+        .select-input {
+            height: 44px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: #fff;
+            padding: 0 12px;
+            font-family: var(--mono);
+            font-size: 14px;
+            color: var(--ink);
+            outline: none;
+            cursor: pointer;
+        }
+
         .row-label {
             font-size: 13px;
             line-height: 1.4;
@@ -269,7 +282,7 @@
                 order: 2;
             }
 
-            .stepper {
+            .stepper, .select-input {
                 order: 1;
             }
         }
@@ -301,6 +314,37 @@
                 <div class="row-label" id="modeLabel">Merge every N points into one</div>
             </div>
 
+            <div class="row">
+                <select id="timezoneSelect" class="select-input">
+                    <option value="0">UTC+0 (Raw GMT)</option>
+                    <option value="1">UTC+1 (CET)</option>
+                    <option value="2" selected>UTC+2 (CEST)</option>
+                    <option value="3">UTC+3 (EEST / MSK)</option>
+                    <option value="4">UTC+4</option>
+                    <option value="5">UTC+5</option>
+                    <option value="6">UTC+6</option>
+                    <option value="7">UTC+7</option>
+                    <option value="8">UTC+8</option>
+                    <option value="9">UTC+9</option>
+                    <option value="10">UTC+10</option>
+                    <option value="11">UTC+11</option>
+                    <option value="12">UTC+12</option>
+                    <option value="-1">UTC-1</option>
+                    <option value="-2">UTC-2</option>
+                    <option value="-3">UTC-3</option>
+                    <option value="-4">UTC-4 (EDT)</option>
+                    <option value="-5">UTC-5 (EST/CDT)</option>
+                    <option value="-6">UTC-6 (MDT)</option>
+                    <option value="-7">UTC-7 (PDT)</option>
+                    <option value="-8">UTC-8 (PST)</option>
+                    <option value="-9">UTC-9</option>
+                    <option value="-10">UTC-10</option>
+                    <option value="-11">UTC-11</option>
+                    <option value="-12">UTC-12</option>
+                </select>
+                <div class="row-label">Timezone</div>
+            </div>
+
             <button class="primary" id="processBtn" disabled>Process and Download</button>
             <div id="status"></div>
         </div>
@@ -323,6 +367,7 @@
         const dzHint = document.getElementById("dzHint");
         const fileInput = document.getElementById("file");
         const amountInput = document.getElementById("amount");
+        const timezoneSelect = document.getElementById("timezoneSelect");
         const processBtn = document.getElementById("processBtn");
         const status = document.getElementById("status");
         const modeSecondsBtn = document.getElementById("modeSeconds");
@@ -442,10 +487,21 @@
             status.innerHTML = '<div class="panel ' + type + '">' + html + '</div>';
         }
 
+        function adjustToUTC(timeStr, sourceTzOffset) {
+            if (!timeStr) return timeStr;
+            const date = new Date(timeStr);
+            if (isNaN(date.getTime())) return timeStr;
+
+            // Вычитаем выбранный пояс, чтобы перевести время локальной записи обратно в истинный UTC
+            date.setHours(date.getHours() - sourceTzOffset);
+            return date.toISOString();
+        }
+
         processBtn.addEventListener("click", async () => {
             if (!selectedFile) return;
 
             const amount = Math.max(1, Number(amountInput.value) || 5);
+            const sourceTz = Number(timezoneSelect.value) || 0;
             processBtn.disabled = true;
             showPanel("loading", "Processing…");
 
@@ -458,7 +514,7 @@
                     return;
                 }
 
-                const { xml, stats } = fixGPX(doc, mode, amount);
+                const { xml, stats } = fixGPX(doc, mode, amount, sourceTz);
                 const outName = buildOutputName(selectedFile.name, amount, mode);
                 download(outName, xml);
 
@@ -496,7 +552,7 @@
             return cleaned === "" ? NaN : Number(cleaned);
         }
 
-        function fixGPX(doc, mode, amount) {
+        function fixGPX(doc, mode, amount, sourceTz) {
             const stats = { pointsIn: 0, pointsOut: 0, reduction: 0, tracks: 0, skipped: 0, noTimeSegments: false };
             const metadataName = getText(doc.documentElement, "metadata", "name");
 
@@ -522,9 +578,12 @@
                         const lon = toNumber(node.getAttribute("lon"));
                         if (!isFinite(lat) || !isFinite(lon)) { stats.skipped++; continue; }
 
+                        const rawTime = getText(node, null, "time");
+                        const utcTime = adjustToUTC(rawTime, sourceTz);
+
                         const point = {
                             lat, lon,
-                            time: getText(node, null, "time"),
+                            time: utcTime,
                             ele: toNumber(getText(node, null, "ele"))
                         };
                         for (const field of EXT_FIELDS) {
