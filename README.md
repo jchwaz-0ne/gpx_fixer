@@ -1,63 +1,18 @@
 # GPX Fixer
 
-Простой веб-инструмент для оптимизации GPX-файлов прямо в браузере.
+A lightweight browser tool to reduce GPX file size and smooth route tracks.
 
-GPX Fixer объединяет соседние точки трека в одну усреднённую точку, уменьшая количество точек в файле и сохраняя общую форму маршрута.
+<a href="https://jchwaz-0ne.github.io/gpx_fixer/" target="_blank" rel="noopener noreferrer">jchwaz-0ne.github.io/gpx_fixer</a>
 
-[jchwaz-0ne.github.io/gpx_fixer](https://jchwaz-0ne.github.io/gpx_fixer/)
+## What it does
 
----
+- **Compresses GPX files:** Merges nearby points to make files smaller.
+- **Two modes:** Combine points by count (e.g., every 5 points) or time interval (e.g., every 5 seconds).
+- **Keeps telemetry:** Smoothly averages elevation, heart rate, cadence, power, and temperature.
 
-## Возможности
+## Example
 
-- 📂 Загрузка GPX-файлов
-- 📍 Объединение каждых **N** точек в одну
-- ⏱️ Объединение точек по временному интервалу
-- 📊 Усреднение координат и дополнительных данных
-- 💾 Экспорт обработанного GPX
-- 🖥️ Полностью работает в браузере
-- 🔒 Файлы не загружаются на сервер
+![Before and After](images/before_after.png)
 
----
-
-## Как работает
-
-Доступно два режима обработки:
-
-### По количеству точек
-
-Каждые **N** последовательных точек объединяются в одну.
-
-### По времени
-
-Все точки, попавшие в заданный временной интервал, объединяются в одну.
-
-При объединении вычисляются средние значения:
-
-- широты (Latitude)
-- долготы (Longitude)
-- высоты (Elevation)
-- пульса (Heart Rate)
-- каденса (Cadence)
-- температуры
-- мощности (Power)
-
-После обработки сохраняется структура GPX-файла, а количество точек значительно уменьшается.
-
----
-
-## Пример
-
-![До и после](images/before_after.png)
-
-🔴 Красная линия — исходный GPX-трек
-
-🔵 Синяя линия — обработанный GPX-трек
-
----
-
-## Конфиденциальность
-
-Все операции выполняются локально в браузере пользователя.
-
-GPX-файлы никуда не отправляются и не сохраняются на сторонних серверах.
+- 🔴 **Red line:** Original GPX track
+- 🔵 **Blue line:** Cleaned GPX track

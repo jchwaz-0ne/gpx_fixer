@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>GPX Fixer — сглаживание точек</title>
+    <title>GPX Fixer - route smoothing</title>
     <style>
         :root {
             --bg: #eef1ec;
@@ -279,29 +279,29 @@
 <body>
     <div class="wrap">
         <div class="card">
-            <h1>Объединитель точек GPX</h1>
+            <h1>GPX route smoothing</h1>
 
             <div class="dropzone" id="dropzone">
-                <div class="dz-main" id="dzMain">Перетащите файл сюда или нажмите, чтобы выбрать</div>
+                <div class="dz-main" id="dzMain">Drag and drop a file here, or click to select</div>
                 <div class="dz-hint" id="dzHint">.gpx</div>
             </div>
             <input type="file" id="file" accept=".gpx,application/gpx+xml,text/xml,application/xml">
 
             <div class="mode-toggle">
-                <button type="button" class="mode-btn active" id="modePoints" data-mode="points">По точкам</button>
-                <button type="button" class="mode-btn" id="modeSeconds" data-mode="seconds">По секундам</button>
+                <button type="button" class="mode-btn active" id="modePoints" data-mode="points">By points</button>
+                <button type="button" class="mode-btn" id="modeSeconds" data-mode="seconds">By seconds</button>
             </div>
 
             <div class="row">
                 <div class="stepper">
-                    <button type="button" id="secMinus" aria-label="меньше">−</button>
+                    <button type="button" id="secMinus" aria-label="decrease">−</button>
                     <input type="number" id="amount" value="5" min="1" inputmode="numeric">
-                    <button type="button" id="secPlus" aria-label="больше">+</button>
+                    <button type="button" id="secPlus" aria-label="increase">+</button>
                 </div>
-                <div class="row-label" id="modeLabel">Объединять каждые N точек в одну</div>
+                <div class="row-label" id="modeLabel">Merge every N points into one</div>
             </div>
 
-            <button class="primary" id="processBtn" disabled>Обработать и скачать</button>
+            <button class="primary" id="processBtn" disabled>Process and Download</button>
             <div id="status"></div>
         </div>
     </div>
@@ -333,8 +333,8 @@
         let mode = "points";
 
         const MODE_TEXT = {
-            seconds: "Объединять точки чаще, чем раз в N секунд",
-            points: "Объединять каждые N точек в одну"
+            seconds: "Merge points closer than N seconds apart",
+            points: "Merge every N points into one"
         };
 
         function setMode(newMode) {
@@ -391,21 +391,21 @@
                 dzHint.textContent = formatBytes(file.size) + " · " + info.summary;
                 processBtn.disabled = false;
             } catch (err) {
-                showPanel("error", "Не удалось прочитать файл: " + escapeHtml(err.message));
+                showPanel("error", "Failed to read file: " + escapeHtml(err.message));
             }
         }
 
         function formatBytes(n) {
-            if (n < 1024) return n + " Б";
-            if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " КБ";
-            return (n / 1024 / 1024).toFixed(2) + " МБ";
+            if (n < 1024) return n + " B";
+            if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+            return (n / 1024 / 1024).toFixed(2) + " MB";
         }
 
         function readAsText(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = () => resolve(reader.result);
-                reader.onerror = () => reject(new Error("ошибка чтения"));
+                reader.onerror = () => reject(new Error("read error"));
                 reader.readAsText(file, "UTF-8");
             });
         }
@@ -414,9 +414,9 @@
             const parser = new DOMParser();
             const doc = parser.parseFromString(text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text, "application/xml");
             const err = doc.getElementsByTagName("parsererror")[0];
-            if (err) return { doc: null, error: "Файл повреждён или это не корректный XML/GPX." };
+            if (err) return { doc: null, error: "File is corrupted or not valid XML/GPX." };
             if (!doc.documentElement || doc.documentElement.localName.toLowerCase() !== "gpx") {
-                return { doc: null, error: "В файле не найден корневой элемент &lt;gpx&gt;. Похоже, это не GPX-файл." };
+                return { doc: null, error: "Root element &lt;gpx&gt; not found. The file doesn't seem to be a valid GPX." };
             }
             return { doc, error: null };
         }
@@ -429,12 +429,12 @@
             const wpt = doc.getElementsByTagName("wpt").length;
             const rte = doc.getElementsByTagName("rte").length;
             if (!trkpt && !wpt && !rte) {
-                return { error: "В файле не найдено ни точек трека, ни точек маршрута — нечего обрабатывать." };
+                return { error: "No trackpoints, waypoints, or routes found in the file — nothing to process." };
             }
             const parts = [];
-            if (trkpt) parts.push(trkpt + " точек, " + trk + " трек(ов)");
-            if (wpt) parts.push(wpt + " путевых точек");
-            if (rte) parts.push(rte + " маршрутов");
+            if (trkpt) parts.push(trkpt + " points, " + trk + " track(s)");
+            if (wpt) parts.push(wpt + " waypoints");
+            if (rte) parts.push(rte + " routes");
             return { summary: parts.join(" · ") };
         }
 
@@ -447,7 +447,7 @@
 
             const amount = Math.max(1, Number(amountInput.value) || 5);
             processBtn.disabled = true;
-            showPanel("loading", "Обработка…");
+            showPanel("loading", "Processing…");
 
             try {
                 const rawText = await readAsText(selectedFile);
@@ -462,19 +462,19 @@
                 const outName = buildOutputName(selectedFile.name, amount, mode);
                 download(outName, xml);
 
-                let html = "Готово! Файл <b>" + escapeHtml(outName) + "</b> скачан.";
+                let html = "Done! File <b>" + escapeHtml(outName) + "</b> downloaded.";
                 html += '<div class="readout">';
-                html += "<span>точек: <b>" + stats.pointsIn + "</b> → <b>" + stats.pointsOut + "</b> (−" + stats.reduction + "%)</span>";
-                if (stats.tracks > 1) html += "<span>треков: <b>" + stats.tracks + "</b></span>";
-                if (stats.skipped) html += "<span>пропущено некорректных: <b>" + stats.skipped + "</b></span>";
+                html += "<span>points: <b>" + stats.pointsIn + "</b> → <b>" + stats.pointsOut + "</b> (−" + stats.reduction + "%)</span>";
+                if (stats.tracks > 1) html += "<span>tracks: <b>" + stats.tracks + "</b></span>";
+                if (stats.skipped) html += "<span>skipped invalid: <b>" + stats.skipped + "</b></span>";
                 html += "</div>";
                 if (stats.noTimeSegments && mode === "seconds") {
-                    html += '<div class="note">В части точек нет метки времени — там усреднение не применялось.</div>';
+                    html += '<div class="note">Some points lacked timestamps — averaging was not applied there.</div>';
                 }
                 showPanel("success", html);
                 processBtn.disabled = false;
             } catch (err) {
-                showPanel("error", "Не удалось обработать файл: " + escapeHtml(err.message));
+                showPanel("error", "Failed to process file: " + escapeHtml(err.message));
                 processBtn.disabled = false;
             }
         });
