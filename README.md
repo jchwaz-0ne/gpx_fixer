@@ -2,7 +2,7 @@
 
 A lightweight browser tool to reduce GPX file size and smooth route tracks.
 
-<a href="https://jchwaz-0ne.github.io/gpx_fixer/" target="_blank" rel="noopener noreferrer">jchwaz-0ne.github.io/gpx_fixer</a>
+[jchwaz-0ne.github.io/gpx_fixer](https://jchwaz-0ne.github.io/gpx_fixer/)
 
 ## What it does
 
